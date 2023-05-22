@@ -1,26 +1,48 @@
 const express = require('express');
-const multer = require('multer');
-const path = require('path');
 const fs = require('fs');
+const { Readable } = require('stream');
+const multer = require('multer');
 const { exec } = require('child_process');
-
 
 const app = express();
 const upload = multer({ dest: 'documents/' });
 
+const documentsDir = 'documents';
+
+// Verificar y crear la carpeta "documents" si no existe
+if (!fs.existsSync(documentsDir)) {
+  fs.mkdirSync(documentsDir);
+  console.log('Carpeta "documents" creada');
+}
+
 app.use(express.static('public'));
 
-app.post('/upload', upload.single('file'), (req, res) => {
-  if (!fs.existsSync('documents')) {
-    fs.mkdirSync('documents');
-  }
-
-  if (req.file) {
-    res.sendStatus(200);
-  } else {
-    res.sendStatus(500);
+app.get('/files', (req, res) => {
+  try {
+    const files = fs.readdirSync(documentsDir);
+    res.send(files);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error al obtener la lista de archivos');
   }
 });
+
+app.post('/upload', upload.single('file'), (req, res) => {
+  try {
+    const file = req.file;
+    const filePath = `${documentsDir}/${file.originalname}`;
+
+    // Mover el archivo subido a la carpeta "documents"
+    fs.renameSync(file.path, filePath);
+
+    const files = fs.readdirSync(documentsDir);
+    res.send(files);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error al cargar el archivo');
+  }
+});
+
 
 const port = 3000;
 app.listen(port, () => {
