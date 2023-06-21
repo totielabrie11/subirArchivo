@@ -53,10 +53,42 @@ function updateFileList() {
         const listItem = document.createElement('li');
         listItem.textContent = file;
         fileList.appendChild(listItem);
+
+        const deleteButton = document.createElement('button');
+        deleteButton.textContent = 'Eliminar';
+        deleteButton.classList.add('delete-button');
+        deleteButton.setAttribute('data-file', file);
+
+        deleteButton.addEventListener('click', () => {
+          deleteFile(file);
+        });
+        listItem.appendChild(deleteButton);
       });
     })
     .catch(error => console.error(error));
 }
+
+fileList.addEventListener('click', (event) => {
+  if (event.target.classList.contains('delete-button')) {
+    const fileName = event.target.getAttribute('data-file');
+    deleteFile(fileName);
+  }
+});
+
+function deleteFile(fileName) {
+  fetch(`/delete?file=${encodeURIComponent(fileName)}`, {
+    method: 'DELETE'
+  })
+  .then(response => {
+    if (response.ok) {
+      updateFileList();
+    } else {
+      console.error('Error al eliminar el archivo');
+    }
+  })
+  .catch(error => console.error(error));
+}
+
 
 document.addEventListener('DOMContentLoaded', () => {
   updateFileList();

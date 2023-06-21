@@ -84,3 +84,10 @@ ul li:last-child {
 ul li:hover {
   background-color: #f0f0f0;
 }
+
+.delete-button {
+  
+  background-color: rgb(255, 237, 41);
+  cursor: pointer;
+  float: right;
+}

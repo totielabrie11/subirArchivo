@@ -43,6 +43,22 @@ app.post('/upload', upload.single('file'), (req, res) => {
   }
 });
 
+app.delete('/delete', (req, res) => {
+  try {
+    const fileName = req.query.file;
+    const filePath = `${documentsDir}/${fileName}`;
+
+    // Eliminar el archivo del sistema de archivos
+    fs.unlinkSync(filePath);
+
+    const files = fs.readdirSync(documentsDir);
+    res.send(files);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error al eliminar el archivo');
+  }
+});
+
 
 const port = 3000;
 app.listen(port, () => {
