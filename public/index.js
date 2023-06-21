@@ -82,6 +82,12 @@ function deleteFile(fileName) {
   .then(response => {
     if (response.ok) {
       updateFileList();
+      messageDiv.textContent = '¡Archivo eliminado con éxito!';
+      messageDiv.classList.remove('error');
+      messageDiv.classList.add('success');
+      setTimeout(() => {
+        messageDiv.textContent = '';
+      }, 6000);
     } else {
       console.error('Error al eliminar el archivo');
     }
