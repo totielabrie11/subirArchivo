@@ -3,6 +3,7 @@ const fs = require('fs');
 const { Readable } = require('stream');
 const multer = require('multer');
 const { exec } = require('child_process');
+const path = require('path');
 
 const app = express();
 const upload = multer({ dest: 'documents/' });
@@ -59,6 +60,18 @@ app.delete('/delete', (req, res) => {
   }
 });
 
+
+app.get('/download/:filename', (req, res) => {
+  const filename = req.params.filename;
+  const filePath = path.join(__dirname, 'documents', filename);
+
+  res.sendFile(filePath, err => {
+    if (err) {
+      console.error(err);
+      res.status(404).send('Archivo no encontrado');
+    }
+  });
+});
 
 const port = 3000;
 app.listen(port, () => {

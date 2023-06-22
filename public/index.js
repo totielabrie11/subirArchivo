@@ -97,11 +97,19 @@ function updateFileList() {
 
         listItem.appendChild(deleteButton);
 
+        const downloadLink = document.createElement('a');
+        downloadLink.textContent = 'Descargar';
+        downloadLink.href = `/download/${encodeURIComponent(fileName)}`;
+        downloadLink.setAttribute('download', fileName);
+        listItem.appendChild(downloadLink);
+
         fileList.appendChild(listItem);
       });
     })
     .catch(error => console.error(error));
 }
+
+
 
 
 document.addEventListener('DOMContentLoaded', () => {
