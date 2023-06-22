@@ -1,78 +1,47 @@
 const uploadForm = document.getElementById('upload-form');
 const fileInput = document.getElementById('file-input');
 const messageDiv = document.getElementById('message');
+const fileList = document.getElementById('file-list');
+const progressBar = document.getElementById('progress-bar');
+const progressContainer = document.querySelector('.progress-container');
 
 uploadForm.addEventListener('submit', (event) => {
-  event.preventDefault(); // Evitar la acción por defecto del formulario
-
-  const file = fileInput.files[0]; // Obtener el archivo seleccionado
-  
+  event.preventDefault();
+  const file = fileInput.files[0];
   const formData = new FormData();
   formData.append('file', file);
 
-  fetch('/upload', {
-    method: 'POST',
-    body: formData
-  })
-  .then(response => {
-    if (response.ok) {
-      messageDiv.textContent = '¡Archivo cargado exitosamente!';
-      messageDiv.classList.remove('error');
-      messageDiv.classList.add('success');
-      setTimeout(() => {
-        messageDiv.textContent = ""
-        
-      }, 6000);
-    } else {
-      messageDiv.textContent = '¡Error al cargar el archivo!';
-      messageDiv.classList.remove('success');
-      messageDiv.classList.add('error');
-      setTimeout(() => {
-        messageDiv.textContent = ""
-        
-      }, 6000);
+  const xhr = new XMLHttpRequest();
+  xhr.open('POST', '/upload');
+
+  xhr.upload.addEventListener('progress', (event) => {
+    if (event.lengthComputable) {
+      const percent = (event.loaded / event.total) * 100;
+      progressBar.style.width = percent + '%';
+
+      if (percent === 100) {
+        setTimeout(() => {
+          progressContainer.style.display = 'none';
+        }, 1000); // Espera 1 segundo antes de ocultar la barra de progreso
+      }else{
+        progressContainer.style.display = 'block';
+      }
     }
-  })
-  .catch(error => {
-    messageDiv.textContent = '¡Error en la solicitud!';
-    messageDiv.classList.remove('success');
-    messageDiv.classList.add('error');
-    console.error(error);
   });
-});
 
+  xhr.onreadystatechange = () => {
+    if (xhr.readyState === XMLHttpRequest.DONE) {
+      if (xhr.status === 200) {
+        messageDiv.textContent = '¡Archivo cargado exitosamente!';
+        updateFileList(); // Actualiza la lista de archivos
+        uploadForm.reset();
+      } else {
+        messageDiv.textContent = '¡Error al cargar el archivo!';
+      }
+    }
+  };
 
-const fileList = document.getElementById('file-list');
-  
-function updateFileList() {
-  fetch('/files')
-    .then(response => response.json())
-    .then(data => {
-      fileList.innerHTML = '';
-      data.forEach(file => {
-        const listItem = document.createElement('li');
-        listItem.textContent = file;
-        fileList.appendChild(listItem);
-
-        const deleteButton = document.createElement('button');
-        deleteButton.textContent = 'Eliminar';
-        deleteButton.classList.add('delete-button');
-        deleteButton.setAttribute('data-file', file);
-
-        deleteButton.addEventListener('click', () => {
-          deleteFile(file);
-        });
-        listItem.appendChild(deleteButton);
-      });
-    })
-    .catch(error => console.error(error));
-}
-
-fileList.addEventListener('click', (event) => {
-  if (event.target.classList.contains('delete-button')) {
-    const fileName = event.target.getAttribute('data-file');
-    deleteFile(fileName);
-  }
+  xhr.send(formData);
 });
 
 function deleteFile(fileName) {
@@ -86,7 +55,7 @@ function deleteFile(fileName) {
       messageDiv.classList.remove('error');
       messageDiv.classList.add('success');
       setTimeout(() => {
-        messageDiv.textContent = '';
+        messageDiv.textContent = "";
       }, 6000);
     } else {
       console.error('Error al eliminar el archivo');
@@ -95,27 +64,46 @@ function deleteFile(fileName) {
   .catch(error => console.error(error));
 }
 
+function updateFileList() {
+  fetch('/files')
+    .then(response => response.json())
+    .then(data => {
+      fileList.innerHTML = '';
+      data.forEach(fileName => {
+        const listItem = document.createElement('li');
+
+        const fileExtension = fileName.split('.').pop().toLowerCase();
+        const isImageFile = ['jpg', 'jpeg', 'png', 'gif'].includes(fileExtension);
+
+        if (isImageFile) {
+          const image = document.createElement('img');
+          image.src = `/files/${encodeURIComponent(fileName)}`;
+          image.alt = 'Vista previa';
+          listItem.appendChild(image);
+        }
+
+        const fileNameElement = document.createElement('span');
+        fileNameElement.textContent = fileName;
+        listItem.appendChild(fileNameElement);
+
+        const deleteButton = document.createElement('button');
+        deleteButton.textContent = 'Eliminar';
+        deleteButton.classList.add('delete-button');
+        deleteButton.setAttribute('data-file', fileName);
+
+        deleteButton.addEventListener('click', () => {
+          deleteFile(fileName);
+        });
+
+        listItem.appendChild(deleteButton);
+
+        fileList.appendChild(listItem);
+      });
+    })
+    .catch(error => console.error(error));
+}
+
 
 document.addEventListener('DOMContentLoaded', () => {
   updateFileList();
-});
-
-
-uploadForm.addEventListener('submit', event => {
-  event.preventDefault();
-  const formData = new FormData(uploadForm);
-
-  fetch('/upload', {
-    method: 'POST',
-    body: formData
-  })
-    .then(response => {
-      if (response.ok) {
-        updateFileList();
-        uploadForm.reset();
-      } else {
-        console.error('Error en la carga del archivo');
-      }
-    })
-    .catch(error => console.error(error));
 });
