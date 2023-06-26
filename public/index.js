@@ -7,11 +7,14 @@ const progressContainer = document.querySelector('.progress-container');
 
 uploadForm.addEventListener('submit', (event) => {
   event.preventDefault();
-  const file = fileInput.files[0];
-  const formData = new FormData();
-  formData.append('file', file);
 
-  const files = fileInput.files; // Obtener todos los archivos seleccionados
+  const files = fileInput.files; // Obtén la lista de archivos seleccionados
+
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    const formData = new FormData();
+    formData.append('file', file);
+
 
   const progressText = document.getElementById('progress-text');
   const xhr = new XMLHttpRequest();
@@ -44,8 +47,8 @@ uploadForm.addEventListener('submit', (event) => {
       }
     }
   };
-
   xhr.send(formData);
+  };
 });
 
 function deleteFile(fileName) {
