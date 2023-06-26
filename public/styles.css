@@ -110,3 +110,23 @@ a {
   height: 100%;
   background-color: #4caf50;
 }
+
+#drop-area {
+  border: 2px dashed #ccc;
+  border-radius: 5px;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+}
+
+#drop-area p {
+  margin: 0;
+}
+
+.hover{
+  background-color: #e32c2c;
+}
+
+#drop-area.drop {
+  background-color: #e0e0e0;
+}

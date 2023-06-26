@@ -5,6 +5,71 @@ const fileList = document.getElementById('file-list');
 const progressBar = document.getElementById('progress-bar');
 const progressContainer = document.querySelector('.progress-container');
 
+const dropArea = document.getElementById("drop-area");
+dropArea.addEventListener("drop", handleDrop);
+dropArea.addEventListener("dragover", handleDragOver);
+dropArea.addEventListener("dragleave", handleDragLeave);
+
+function handleDrop(event) {
+  event.preventDefault();
+  event.target.classList.remove("hover");
+  event.target.classList.add("drop");
+
+  const files = event.dataTransfer.files;
+  handleFiles(files);
+}
+
+function handleDragOver(event) {
+  event.preventDefault();
+  event.target.classList.add("hover");
+}
+
+function handleDragLeave(event) {
+  event.target.classList.remove("hover");
+}
+
+function handleFiles(files) {
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    const formData = new FormData();
+    formData.append('file', file);
+
+
+  const progressText = document.getElementById('progress-text');
+  const xhr = new XMLHttpRequest();
+  xhr.open('POST', '/upload');
+
+  xhr.upload.addEventListener('progress', (event) => {
+    if (event.lengthComputable) {
+      const percent = (event.loaded / event.total) * 100;
+      progressBar.style.width = percent + '%';
+      progressText.textContent = percent.toFixed(0) + '%';
+
+      if (percent === 100) {
+        setTimeout(() => {
+          progressContainer.style.display = 'none';
+        }, 1000); // Espera 1 segundo antes de ocultar la barra de progreso
+      }else{
+        progressContainer.style.display = 'block';
+      }
+    }
+  });
+
+  xhr.onreadystatechange = () => {
+    if (xhr.readyState === XMLHttpRequest.DONE) {
+      if (xhr.status === 200) {
+        messageDiv.textContent = '¡Archivo cargado exitosamente!';
+        updateFileList(); // Actualiza la lista de archivos
+        uploadForm.reset();
+      } else {
+        messageDiv.textContent = '¡Error al cargar el archivo!';
+      }
+    }
+  };
+  xhr.send(formData);
+  };
+}
+
 uploadForm.addEventListener('submit', (event) => {
   event.preventDefault();
 
