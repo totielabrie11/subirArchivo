@@ -11,6 +11,9 @@ uploadForm.addEventListener('submit', (event) => {
   const formData = new FormData();
   formData.append('file', file);
 
+  const files = fileInput.files; // Obtener todos los archivos seleccionados
+
+  const progressText = document.getElementById('progress-text');
   const xhr = new XMLHttpRequest();
   xhr.open('POST', '/upload');
 
@@ -18,6 +21,7 @@ uploadForm.addEventListener('submit', (event) => {
     if (event.lengthComputable) {
       const percent = (event.loaded / event.total) * 100;
       progressBar.style.width = percent + '%';
+      progressText.textContent = percent.toFixed(0) + '%';
 
       if (percent === 100) {
         setTimeout(() => {
